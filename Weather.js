@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -40,6 +40,12 @@ const weatherCases = {
     title: 'Cloudy',
     subtitle: 'So-so',
     icon: 'weather-cloudy'
+  },
+  Mist: {
+    colors: ['#DDE1E4', '#191A1C'],
+    title: 'foggy',
+    subtitle: "We can always have fun even though it's foggy!",
+    icon: 'weather-fog'
   }
 };
 
@@ -69,7 +75,18 @@ export default function Weather({ temp, weatherName }) {
 
 Weather.propTypes = {
   temp: PropTypes.number.isRequired,
-  weatherName: PropTypes.string.isRequired
+  weatherName: PropTypes.oneOf([
+    'Thunderstorm',
+    'Drizzle',
+    'Rain',
+    'Snow',
+    'Atmosphere',
+    'Clear',
+    'Clouds',
+    'Haze',
+    'Mist',
+    'Dust'
+  ]).isRequired
 };
 
 const styles = StyleSheet.create({
