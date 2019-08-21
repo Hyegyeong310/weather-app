@@ -1,53 +1,58 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, StatusBar, Alert } from 'react-native';
+import * as Location from 'expo-location';
+import axios from 'axios';
+import Loading from './Loading';
 import Weather from './Weather';
 
 const API_KEY = '0c92beab857078a2c68a3d621dadc849';
 
-export default class App extends Component {
+export default class extends Component {
   state = {
-    isLoaded: false,
+    isLoading: true,
     error: null,
     temperature: null,
     name: null
   };
-  componentDidMount() {
-    // "latitude": 37.6162554,
-    // "longitude": 127.0868828,
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        this._getWeather(position.coords.latitude, position.coords.longitude);
-      },
-      error => {
-        this.setState({ error });
+  getWeather = async (lat, long) => {
+    const {
+      data: {
+        main: { temp },
+        weather
       }
+    } = await axios.get(
+      `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&units=metric&APPID=${API_KEY}`
     );
-  }
-  _getWeather = (lat, long) => {
-    fetch(
-      `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&APPID=${API_KEY}`
-    )
-      .then(res => res.json())
-      .then(json => {
-        this.setState({
-          temperature: json.main.temp,
-          name: json.weather[0].main,
-          isLoaded: true
-        });
-      });
+    this.setState({
+      isLoading: false,
+      temperature: temp,
+      name: weather[0].main
+    });
   };
+  getLocation = async () => {
+    try {
+      await Location.requestPermissionsAsync();
+      const {
+        coords: { latitude, longitude }
+      } = await Location.getCurrentPositionAsync();
+      this.getWeather(latitude, longitude);
+    } catch (err) {
+      Alert.alert("Can't find you.", 'So sad');
+    }
+  };
+  componentDidMount() {
+    this.getLocation();
+  }
+
   render() {
-    const { isLoaded, error, temperature, name } = this.state;
+    const { isLoading, error, temperature, name } = this.state;
     return (
       <View style={styles.container}>
         <StatusBar hidden={true} />
-        {isLoaded ? (
-          <Weather temp={Math.ceil(temperature - 273.15)} weatherName={name} />
+        {isLoading ? (
+          <Loading />
         ) : (
-          <View style={styles.loading}>
-            <Text style={styles.loadingText}>Getting the weather</Text>
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          </View>
+          <Weather temp={Math.round(temperature)} weatherName={name} />
         )}
       </View>
     );
@@ -63,17 +68,5 @@ const styles = StyleSheet.create({
     color: 'red',
     backgroundColor: 'transparent',
     marginBottom: 40
-  },
-  loading: {
-    flex: 1,
-    backgroundColor: '#fdf6aa',
-    justifyContent: 'flex-end',
-    paddingLeft: 25
-  },
-  loadingText: {
-    fontSize: 36,
-    marginBottom: 100,
-    fontWeight: '300',
-    marginBottom: 24
   }
 });
