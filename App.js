@@ -1,20 +1,42 @@
-import React from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import React, { Component } from 'react';
+import { StyleSheet, Text, View, StatusBar } from 'react-native';
+import Weather from './Weather';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <ActivityIndicator />
-      <Text>Hello! This is Weather App!</Text>
-    </View>
-  );
+export default class App extends Component {
+  state = {
+    isLoaded: true
+  };
+  render() {
+    const { isLoaded } = this.state;
+    return (
+      <View style={styles.container}>
+        <StatusBar hidden={true} />
+        {isLoaded ? (
+          <Weather />
+        ) : (
+          <View style={styles.loading}>
+            <Text style={styles.loadingText}>Getting the weather</Text>
+          </View>
+        )}
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
+    backgroundColor: '#fff'
+  },
+  loading: {
+    flex: 1,
+    backgroundColor: '#fdf6aa',
+    justifyContent: 'flex-end',
+    paddingLeft: 25
+  },
+  loadingText: {
+    fontSize: 36,
+    marginBottom: 100,
+    fontWeight: '300'
   }
 });
